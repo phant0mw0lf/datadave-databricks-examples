@@ -1,0 +1,34 @@
+# Shared by the three bundles (a-package, b-job-tasks, c-declarative).
+# Override per machine with --var or BUNDLE_VAR_<name>.
+variables:
+  profile:
+    description: databricks CLI profile of the workspace
+    default: DEFAULT
+  catalog:
+    description: Unity Catalog catalog the tables land in (schemas bronze/silver/gold; the declarative variant uses ldp_bronze/ldp_silver/ldp_gold)
+    default: main
+  volume_path:
+    description: Volume folder holding pipeline/data/*.csv (DatabricksPlatform resolves pipeline.yaml's relative `data/` paths here)
+    default: /Volumes/main/pipetree/files
+  pipetree_version:
+    description: pipetree-meta release on PyPI
+    default: "0.1.1"
+  node_type_id:
+    description: VM size of the single-node job cluster
+    default: Standard_D4ds_v5
+  spark_version:
+    description: Databricks Runtime (17.3 LTS = Spark 4.0, Delta 4.0; service credentials need 16.2+)
+    default: "17.3.x-scala2.13"
+  single_node_cluster:
+    description: the one cluster shape every task uses
+    type: complex
+    default:
+      spark_version: ${var.spark_version}
+      node_type_id: ${var.node_type_id}
+      num_workers: 0
+      data_security_mode: SINGLE_USER
+      spark_conf:
+        spark.databricks.cluster.profile: singleNode
+        spark.master: "local[*]"
+      custom_tags:
+        ResourceClass: SingleNode

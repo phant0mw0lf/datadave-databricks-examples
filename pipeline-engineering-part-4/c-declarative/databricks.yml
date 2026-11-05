@@ -1,0 +1,35 @@
+# Variant C - a Lakeflow Declarative Pipeline (serverless, triggered).
+#
+#   databricks bundle deploy -t dev
+#   databricks bundle run pipetree_c_declarative -t dev
+#
+# The three ldp_* schemas are created by the pipeline. Tables are addressed
+# with three-part names in pipeline.sql, so `schema` below is only the
+# pipeline's default.
+
+bundle:
+  name: pipetree-part4-c-declarative
+
+include:
+  - ../shared/variables.yml
+
+resources:
+  pipelines:
+    pipetree_c_declarative:
+      name: "part 4 / C - a Lakeflow Declarative Pipeline"
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ldp_bronze
+      continuous: false
+      configuration:
+        catalog: ${var.catalog}
+        volume_path: ${var.volume_path}
+      libraries:
+        - file:
+            path: ./pipeline.sql
+        - file:
+            path: ./fact_sales.py
+
+targets:
+  dev:
+    default: true

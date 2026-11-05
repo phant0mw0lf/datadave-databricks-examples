@@ -1,0 +1,50 @@
+# Variant A - the package.
+#
+# One job, one task: run_pipeline.py hands pipeline.yaml to pipetree, which
+# builds the dependency tree and runs it (parallel, retries, one run log).
+#
+#   databricks bundle deploy -t dev
+#   databricks bundle run pipetree_a_package -t dev
+#   databricks bundle run pipetree_a_package -t dev --params faults='{...}'   # part 2's faults
+
+bundle:
+  name: pipetree-part4-a-package
+
+include:
+  - ../shared/variables.yml
+
+sync:
+  paths:
+    - ../pipeline
+    - ../shared
+
+resources:
+  jobs:
+    pipetree_a_package:
+      name: "part 4 / A - pipetree, the package"
+      parameters:
+        - name: faults
+          default: ""
+        - name: init
+          default: "false"
+      tasks:
+        - task_key: run_pipeline
+          new_cluster: ${var.single_node_cluster}
+          notebook_task:
+            notebook_path: ../shared/run_pipeline.py
+            base_parameters:
+              catalog: ${var.catalog}
+              config_path: ${workspace.file_path}/pipeline/pipeline.yaml
+              select: ""
+              max_workers: "4"
+              faults: "{{job.parameters.faults}}"
+              init: "{{job.parameters.init}}"
+          libraries:
+            - pypi:
+                package: pipetree-meta[azure]==${var.pipetree_version}
+
+targets:
+  dev:
+    default: true
+    workspace:
+      profile: ${var.profile}
